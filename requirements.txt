@@ -1,0 +1,6 @@
+streamlit
+pandas
+opencv-python-headless
+Pillow
+reportlab
+streamlit-js-eval
