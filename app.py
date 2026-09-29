@@ -15,7 +15,7 @@ from services.location_service import normalize_location
 
 
 # ============================================================
-# GPS
+# OPTIONAL GPS
 # ============================================================
 
 try:
@@ -31,210 +31,56 @@ except Exception:
 st.set_page_config(
     page_title=APP_NAME,
     page_icon="🛡️",
-    layout="centered"
+    layout="centered",
+    initial_sidebar_state="collapsed"
 )
-
-
-# ============================================================
-# DATABASE
-# ============================================================
 
 init_db()
 
 
 # ============================================================
-# CSS
+# SIMPLE THEME
 # ============================================================
 
 st.markdown(
     """
-<style>
+    <style>
 
-.stApp {
-    background: #f5f8fa;
-}
+    /* Main background */
+    .stApp {
+        background-color: #f5f8fa;
+    }
 
-.block-container {
-    max-width: 900px;
-    padding-top: 3.25rem;
-    padding-bottom: 3rem;
-}
-
-/* Streamlit top area */
-[data-testid="stHeader"] {
-    background: #f5f8fa !important;
-}
-
-[data-testid="stToolbar"] {
-    background: transparent !important;
-}
-
-[data-testid="stDecoration"] {
-    background: transparent !important;
-}
-
-
-/* ==========================================================
-   HEADER
-   ========================================================== */
-
-.app-header {
-    background: #0c4a63;
-    color: white;
-    padding: 20px 24px;
-    border-radius: 14px;
-    margin-bottom: 14px;
-}
-
-.app-header h1 {
-    margin: 0;
-    font-size: 30px;
-    font-weight: 700;
-}
-
-.app-header p {
-    margin: 5px 0 0;
-    opacity: 0.88;
-    font-size: 15px;
-}
-
-
-/* ==========================================================
-   STEP BAR
-   ========================================================== */
-
-.stepbar {
-    display: flex;
-    gap: 8px;
-    width: 100%;
-    margin: 10px 0 18px 0;
-}
-
-.step {
-    flex: 1;
-    text-align: center;
-    padding: 10px 4px;
-    border-radius: 9px;
-    background: #e2eaee;
-    color: #3c4b52;
-    font-size: 13px;
-    line-height: 1.35;
-    min-height: 52px;
-    box-sizing: border-box;
-}
-
-.step.active {
-    background: #0c4a63;
-    color: white;
-    font-weight: 700;
-}
-
-
-/* ==========================================================
-   RESULT
-   ========================================================== */
-
-.result {
-    padding: 22px;
-    border-radius: 15px;
-    text-align: center;
-    border: 1px solid #d7e0e5;
-    margin: 12px 0;
-    background: white;
-}
-
-.result h2 {
-    font-size: 34px;
-    margin: 0;
-}
-
-
-/* ==========================================================
-   DISCLAIMER
-   ========================================================== */
-
-.disclaimer {
-    background: #fff8e8;
-    padding: 13px 15px;
-    border-radius: 10px;
-    border-left: 4px solid #d99a18;
-    font-size: 13px;
-    margin-top: 15px;
-}
-
-
-/* ==========================================================
-   META CARD
-   ========================================================== */
-
-.meta-card {
-    background: white;
-    border: 1px solid #dfe7eb;
-    border-radius: 12px;
-    padding: 14px;
-    margin: 8px 0;
-}
-
-
-/* ==========================================================
-   GPS
-   ========================================================== */
-
-.gps-card {
-    background: #eef7fa;
-    border: 1px solid #c8e1e8;
-    border-radius: 12px;
-    padding: 14px;
-    margin: 10px 0;
-}
-
-.gps-wait {
-    background: #fff8e8;
-    border-left: 4px solid #d99a18;
-    padding: 12px;
-    border-radius: 8px;
-    margin: 10px 0;
-}
-
-
-/* ==========================================================
-   BUTTONS
-   ========================================================== */
-
-div.stButton > button {
-    border-radius: 9px;
-    min-height: 42px;
-}
-
-
-/* ==========================================================
-   MOBILE
-   ========================================================== */
-
-@media (max-width: 600px) {
-
+    /* Keep content centered */
     .block-container {
-        padding-left: 1rem;
-        padding-right: 1rem;
+        max-width: 900px;
+        padding-top: 2rem;
+        padding-bottom: 3rem;
     }
 
-    .app-header h1 {
-        font-size: 24px;
+    /* Hide Streamlit decoration */
+    [data-testid="stHeader"] {
+        background: #f5f8fa;
     }
 
-    .stepbar {
-        gap: 4px;
+    /* Buttons */
+    .stButton > button {
+        border-radius: 10px;
+        min-height: 44px;
+        font-weight: 600;
     }
 
-    .step {
-        font-size: 10px;
-        padding: 8px 2px;
+    /* Mobile */
+    @media (max-width: 600px) {
+        .block-container {
+            padding-left: 0.7rem;
+            padding-right: 0.7rem;
+            padding-top: 1.5rem;
+        }
     }
 
-}
-
-</style>
-""",
+    </style>
+    """,
     unsafe_allow_html=True
 )
 
@@ -245,21 +91,18 @@ div.stButton > button {
 
 def header():
 
-    header_html = (
-        '<div class="app-header">'
-        f'<h1>🛡️ {APP_NAME}</h1>'
-        '<p>Digital companion for field drug testing</p>'
-        '</div>'
+    st.title("🛡️ Field Test Companion")
+
+    st.caption(
+        "Digital companion for field drug testing"
     )
 
-    st.markdown(
-        header_html,
-        unsafe_allow_html=True
-    )
+    st.divider()
 
 
 # ============================================================
 # STEP BAR
+# NO HTML USED HERE
 # ============================================================
 
 def steps(active):
@@ -272,36 +115,25 @@ def steps(active):
         "Report"
     ]
 
-    # Build every div as a single line.
-    # This prevents Streamlit Markdown from treating
-    # the indented HTML as a code block.
+    columns = st.columns(5)
 
-    step_items = []
+    for index, label in enumerate(labels, start=1):
 
-    for i, label in enumerate(labels, start=1):
+        with columns[index - 1]:
 
-        if i == active:
+            if index == active:
 
-            step_items.append(
-                f'<div class="step active"><strong>{i}</strong><br>{label}</div>'
-            )
+                st.success(
+                    f"**{index}**\n\n**{label}**"
+                )
 
-        else:
+            else:
 
-            step_items.append(
-                f'<div class="step"><strong>{i}</strong><br>{label}</div>'
-            )
+                st.info(
+                    f"**{index}**\n\n{label}"
+                )
 
-    html = (
-        '<div class="stepbar">'
-        + ''.join(step_items)
-        + '</div>'
-    )
-
-    st.markdown(
-        html,
-        unsafe_allow_html=True
-    )
+    st.write("")
 
 
 # ============================================================
@@ -315,16 +147,18 @@ def reset():
     for key in list(st.session_state.keys()):
 
         if key.startswith("test_"):
-
             keys_to_remove.append(key)
 
-        elif key in ["officer_id", "page"]:
-
+        if key in [
+            "officer_id",
+            "page"
+        ]:
             keys_to_remove.append(key)
 
     for key in keys_to_remove:
 
-        st.session_state.pop(key, None)
+        if key in st.session_state:
+            del st.session_state[key]
 
 
 # ============================================================
@@ -337,11 +171,14 @@ def home():
 
     steps(1)
 
-    st.subheader("Officer workspace")
+    st.header("Officer workspace")
 
     officer = st.text_input(
         "Officer ID",
-        value=st.session_state.get("officer_id", ""),
+        value=st.session_state.get(
+            "officer_id",
+            ""
+        ),
         placeholder="Example: OFF-001"
     )
 
@@ -351,26 +188,25 @@ def home():
         use_container_width=True
     ):
 
-        if officer.strip():
-
-            st.session_state.officer_id = officer.strip()
-
-            st.session_state.page = "new_test"
-
-            st.rerun()
-
-        else:
+        if not officer.strip():
 
             st.error(
                 "Please enter an Officer ID."
             )
 
-    st.markdown(
-        '<div class="disclaimer">'
-        'Prototype • Field-test output is presumptive and requires '
-        'laboratory confirmation.'
-        '</div>',
-        unsafe_allow_html=True
+        else:
+
+            st.session_state.officer_id = (
+                officer.strip()
+            )
+
+            st.session_state.page = "new_test"
+
+            st.rerun()
+
+    st.warning(
+        "Prototype: Field-test output is presumptive "
+        "and requires laboratory confirmation."
     )
 
 
@@ -384,15 +220,20 @@ def new_test():
 
     steps(2)
 
-    st.subheader("Start a new test")
+    st.header("Start a new test")
 
     st.caption(
-        f"Field Officer · {st.session_state.officer_id}"
+        f"Field Officer · "
+        f"{st.session_state.get('officer_id', '')}"
     )
+
+    drug_options = [
+        "Choose a drug"
+    ] + list(DRUGS)
 
     drug = st.selectbox(
         "Suspected drug",
-        ["Choose a drug"] + DRUGS
+        drug_options
     )
 
     batch = st.text_input(
@@ -404,13 +245,13 @@ def new_test():
 
         st.info(
             "The selected drug determines the prototype "
-            "colour interpretation. It cannot identify "
-            "an unknown substance."
+            "colour interpretation. This prototype cannot "
+            "identify an unknown substance by itself."
         )
 
-    c1, c2 = st.columns(2)
+    col1, col2 = st.columns(2)
 
-    with c1:
+    with col1:
 
         if st.button(
             "← Back",
@@ -418,10 +259,9 @@ def new_test():
         ):
 
             st.session_state.page = "home"
-
             st.rerun()
 
-    with c2:
+    with col2:
 
         if st.button(
             "CONTINUE TO CAMERA →",
@@ -451,140 +291,6 @@ def new_test():
 
 
 # ============================================================
-# GPS
-# ============================================================
-
-def get_current_location():
-
-    lat = None
-    lon = None
-
-    if get_geolocation is None:
-
-        return (
-            None,
-            None,
-            "GPS component unavailable."
-        )
-
-    try:
-
-        location = get_geolocation()
-
-        if not location:
-
-            return (
-                None,
-                None,
-                "Waiting for GPS permission..."
-            )
-
-        # Browser/component error
-        if "error" in location:
-
-            error = location.get("error", {})
-
-            code = error.get("code")
-
-            message = error.get(
-                "message",
-                "Unable to obtain location."
-            )
-
-            if code == 1:
-
-                return (
-                    None,
-                    None,
-                    "Location permission was denied."
-                )
-
-            return (
-                None,
-                None,
-                message
-            )
-
-        # Normal format:
-        # {
-        #   "coords": {
-        #       "latitude": ...,
-        #       "longitude": ...
-        #   }
-        # }
-
-        if "coords" in location:
-
-            coords = location["coords"]
-
-            latitude = coords.get(
-                "latitude"
-            )
-
-            longitude = coords.get(
-                "longitude"
-            )
-
-            if (
-                latitude is not None
-                and
-                longitude is not None
-            ):
-
-                lat, lon = normalize_location(
-                    latitude,
-                    longitude
-                )
-
-                return (
-                    lat,
-                    lon,
-                    "GPS location captured automatically."
-                )
-
-        # Fallback format
-
-        latitude = location.get(
-            "latitude"
-        )
-
-        longitude = location.get(
-            "longitude"
-        )
-
-        if (
-            latitude is not None
-            and
-            longitude is not None
-        ):
-
-            lat, lon = normalize_location(
-                latitude,
-                longitude
-            )
-
-            return (
-                lat,
-                lon,
-                "GPS location captured automatically."
-            )
-
-    except Exception as e:
-
-        return (
-            None,
-            None,
-            f"GPS error: {e}"
-        )
-
-    return (
-        None,
-        None,
-        "Waiting for GPS location..."
-    )
-
-
-# ============================================================
 # CAMERA
 # ============================================================
 
@@ -594,24 +300,22 @@ def camera():
 
     steps(3)
 
-    st.subheader("Take a test photo")
+    st.header("Take a test photo")
 
     st.caption(
-        f'{st.session_state.test_drug} · '
-        f'Batch {st.session_state.test_batch}'
+        f"{st.session_state.test_drug} · "
+        f"Batch {st.session_state.test_batch}"
     )
 
-    st.markdown(
-        '<div class="meta-card">'
-        '<b>Positioning guide</b><br>'
-        'Reference colour card on the <b>LEFT</b>, '
-        'test strip/reaction area on the <b>RIGHT</b>. '
-        'Keep both visible, flat and well lit.'
-        '</div>',
-        unsafe_allow_html=True
+    st.info(
+        "Position the reference colour card on the LEFT "
+        "and the test strip/reaction area on the RIGHT. "
+        "Keep both visible, flat and well lit."
     )
 
-    # Reference guide
+    # --------------------------------------------------------
+    # GUIDE IMAGE
+    # --------------------------------------------------------
 
     try:
 
@@ -623,165 +327,235 @@ def camera():
     except Exception:
 
         st.warning(
-            "Reference guide image not found."
+            "Reference guide image could not be loaded."
         )
 
-    # Camera
+    # --------------------------------------------------------
+    # CAMERA
+    # --------------------------------------------------------
 
     captured = st.camera_input(
-        "Camera"
+        "Take test photo"
     )
 
     uploaded = st.file_uploader(
         "Or upload a saved test photo",
-        type=["jpg", "jpeg", "png"]
+        type=[
+            "jpg",
+            "jpeg",
+            "png"
+        ]
     )
 
     image = captured or uploaded
 
-    if image is not None:
+    if image is None:
+        return
 
-        st.image(
-            image,
-            caption="Captured image",
-            use_container_width=True
+    # --------------------------------------------------------
+    # SHOW IMAGE
+    # --------------------------------------------------------
+
+    st.image(
+        image,
+        caption="Captured test image",
+        use_container_width=True
+    )
+
+    # --------------------------------------------------------
+    # GPS
+    # --------------------------------------------------------
+
+    st.subheader("Location")
+
+    lat = None
+    lon = None
+
+    if get_geolocation is not None:
+
+        try:
+
+            location = get_geolocation(
+                component_key="field_test_gps"
+            )
+
+            if isinstance(location, dict):
+
+                latitude = None
+                longitude = None
+
+                if "coords" in location:
+
+                    coords = location.get(
+                        "coords",
+                        {}
+                    )
+
+                    latitude = coords.get(
+                        "latitude"
+                    )
+
+                    longitude = coords.get(
+                        "longitude"
+                    )
+
+                else:
+
+                    latitude = location.get(
+                        "latitude"
+                    )
+
+                    longitude = location.get(
+                        "longitude"
+                    )
+
+                if (
+                    latitude is not None
+                    and longitude is not None
+                ):
+
+                    lat, lon = normalize_location(
+                        latitude,
+                        longitude
+                    )
+
+                    st.success(
+                        f"GPS captured automatically\n\n"
+                        f"Latitude: {lat:.6f}\n\n"
+                        f"Longitude: {lon:.6f}"
+                    )
+
+                else:
+
+                    st.info(
+                        "Waiting for browser GPS permission..."
+                    )
+
+        except Exception:
+
+            st.info(
+                "Automatic GPS is unavailable. "
+                "You can enter the coordinates manually."
+            )
+
+    else:
+
+        st.info(
+            "Automatic GPS component is unavailable. "
+            "You can enter the coordinates manually."
         )
 
-        # ----------------------------------------------------
-        # LOCATION
-        # ----------------------------------------------------
+    # --------------------------------------------------------
+    # MANUAL GPS
+    # --------------------------------------------------------
 
-        st.subheader("Location")
+    col1, col2 = st.columns(2)
 
-        lat, lon, gps_message = get_current_location()
+    with col1:
 
-        if (
-            lat is not None
-            and
-            lon is not None
-        ):
+        lat_input = st.text_input(
+            "Latitude (optional)",
+            value=(
+                ""
+                if lat is None
+                else str(lat)
+            )
+        )
 
-            st.markdown(
-                f'<div class="gps-card">'
-                f'<b>📍 GPS location captured automatically</b><br>'
-                f'Latitude: {lat:.6f}<br>'
-                f'Longitude: {lon:.6f}'
-                f'</div>',
-                unsafe_allow_html=True
+    with col2:
+
+        lon_input = st.text_input(
+            "Longitude (optional)",
+            value=(
+                ""
+                if lon is None
+                else str(lon)
+            )
+        )
+
+    if (
+        lat is None
+        and lat_input.strip()
+        and lon_input.strip()
+    ):
+
+        try:
+
+            lat, lon = normalize_location(
+                lat_input,
+                lon_input
             )
 
-        else:
+        except Exception:
 
-            st.markdown(
-                f'<div class="gps-wait">'
-                f'📍 {gps_message}<br>'
-                f'Please allow location access in your browser.'
-                f'</div>',
-                unsafe_allow_html=True
+            st.warning(
+                "Please enter valid coordinates."
             )
 
-        # Manual fallback
+    # --------------------------------------------------------
+    # PROCESS
+    # --------------------------------------------------------
 
-        c1, c2 = st.columns(2)
+    if st.button(
+        "PROCESS PHOTO →",
+        type="primary",
+        use_container_width=True
+    ):
 
-        with c1:
+        try:
 
-            latm = st.text_input(
-                "Latitude (optional)",
-                value="" if lat is None else str(lat)
+            raw = image.getvalue()
+
+            decoded = decode_image(
+                raw
             )
 
-        with c2:
-
-            lonm = st.text_input(
-                "Longitude (optional)",
-                value="" if lon is None else str(lon)
+            cv = analyze_image(
+                decoded
             )
 
-        if (
-            lat is None
-            and
-            latm
-            and
-            lonm
-        ):
+            # Store image
+            st.session_state.test_image = raw
 
-            try:
+            # Store CV output
+            st.session_state.test_cv = cv
 
-                lat, lon = normalize_location(
-                    latm,
-                    lonm
+            # Time
+            st.session_state.test_time = (
+                datetime.now()
+                .astimezone()
+                .strftime(
+                    "%d %b %Y, %I:%M:%S %p %Z"
                 )
+            )
 
-            except Exception:
+            # GPS
+            st.session_state.test_lat = lat
+            st.session_state.test_lon = lon
 
-                st.warning(
-                    "Please enter valid latitude and longitude."
-                )
+            # Record ID
+            st.session_state.test_record_id = (
+                "FTC-"
+                + uuid.uuid4()
+                .hex[:10]
+                .upper()
+            )
 
-        # ----------------------------------------------------
-        # PROCESS
-        # ----------------------------------------------------
+            # Image hash
+            st.session_state.test_image_hash = (
+                sha256_bytes(raw)
+            )
 
-        if st.button(
-            "PROCESS PHOTO →",
-            type="primary",
-            use_container_width=True
-        ):
+            # Go to result
+            st.session_state.page = "result"
 
-            try:
+            st.rerun()
 
-                raw = image.getvalue()
+        except Exception as e:
 
-                decoded_image = decode_image(
-                    raw
-                )
-
-                cv = analyze_image(
-                    decoded_image
-                )
-
-                # Store image
-                st.session_state.test_image = raw
-
-                # Store CV result
-                st.session_state.test_cv = cv
-
-                # Timestamp
-                st.session_state.test_time = (
-                    datetime.now()
-                    .astimezone()
-                    .strftime(
-                        "%d %b %Y, %I:%M:%S %p %Z"
-                    )
-                )
-
-                # GPS
-                st.session_state.test_lat = lat
-
-                st.session_state.test_lon = lon
-
-                # Record ID
-                st.session_state.test_record_id = (
-                    "FTC-"
-                    + uuid.uuid4().hex[:10].upper()
-                )
-
-                # Image SHA-256
-                st.session_state.test_image_hash = (
-                    sha256_bytes(raw)
-                )
-
-                # Go to result
-                st.session_state.page = "result"
-
-                st.rerun()
-
-            except Exception as e:
-
-                st.error(
-                    f"Could not process image: {e}"
-                )
+            st.error(
+                f"Could not process image: {e}"
+            )
 
 
 # ============================================================
@@ -794,82 +568,137 @@ def result():
 
     steps(4)
 
-    st.subheader("Review result")
+    st.header("Review result")
 
     cv = st.session_state.test_cv
 
-    # Result card
-
-    st.markdown(
-        f'<div class="result">'
-        f'<h2>{cv["result"]}</h2>'
-        f'<div>Prototype confidence: '
-        f'<b>{cv["confidence"]:.1f}%</b></div>'
-        f'</div>',
-        unsafe_allow_html=True
+    result_value = str(
+        cv.get(
+            "result",
+            "INCONCLUSIVE"
+        )
     )
 
-    # Annotated image
-
-    st.image(
-        encode_jpeg(cv["annotated"]),
-        caption=(
-            "Processed image — detected reference "
-            "and test regions"
-        ),
-        use_container_width=True
+    confidence = float(
+        cv.get(
+            "confidence",
+            0
+        )
     )
 
-    # Explanation
+    # --------------------------------------------------------
+    # RESULT DISPLAY
+    # --------------------------------------------------------
 
-    st.write(
-        cv["explanation"]
+    if result_value.upper() == "POSITIVE":
+
+        st.error(
+            f"## {result_value}"
+        )
+
+    elif result_value.upper() == "NEGATIVE":
+
+        st.success(
+            f"## {result_value}"
+        )
+
+    else:
+
+        st.warning(
+            f"## {result_value}"
+        )
+
+    st.metric(
+        "Prototype confidence",
+        f"{confidence:.1f}%"
     )
 
-    # Metrics
+    # --------------------------------------------------------
+    # PROCESSED IMAGE
+    # --------------------------------------------------------
 
-    a, b, c = st.columns(3)
+    if "annotated" in cv:
 
-    a.metric(
-        "Sample R",
-        f'{cv["sample_rgb"]["r"]:.0f}'
-    )
+        st.image(
+            encode_jpeg(
+                cv["annotated"]
+            ),
+            caption=(
+                "Processed image — detected "
+                "reference and test regions"
+            ),
+            use_container_width=True
+        )
 
-    a.metric(
-        "Sample G",
-        f'{cv["sample_rgb"]["g"]:.0f}'
-    )
+    # --------------------------------------------------------
+    # EXPLANATION
+    # --------------------------------------------------------
 
-    b.metric(
-        "Sample B",
-        f'{cv["sample_rgb"]["b"]:.0f}'
-    )
+    if "explanation" in cv:
 
-    b.metric(
-        "Hue",
-        f'{cv["sample_hsv"]["h"]:.0f}'
-    )
+        st.write(
+            cv["explanation"]
+        )
 
-    c.metric(
-        "Saturation",
-        f'{cv["sample_hsv"]["s"]:.0f}'
-    )
+    # --------------------------------------------------------
+    # COLOUR DATA
+    # --------------------------------------------------------
 
-    c.metric(
-        "Lighting factor",
-        f'{cv["lighting_factor"]:.2f}'
-    )
+    st.subheader("Image analysis")
 
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+
+        st.metric(
+            "Sample R",
+            f'{cv["sample_rgb"]["r"]:.0f}'
+        )
+
+        st.metric(
+            "Sample G",
+            f'{cv["sample_rgb"]["g"]:.0f}'
+        )
+
+    with col2:
+
+        st.metric(
+            "Sample B",
+            f'{cv["sample_rgb"]["b"]:.0f}'
+        )
+
+        st.metric(
+            "Hue",
+            f'{cv["sample_hsv"]["h"]:.0f}'
+        )
+
+    with col3:
+
+        st.metric(
+            "Saturation",
+            f'{cv["sample_hsv"]["s"]:.0f}'
+        )
+
+        st.metric(
+            "Lighting factor",
+            f'{cv["lighting_factor"]:.2f}'
+        )
+
+    # --------------------------------------------------------
     # GPS
+    # --------------------------------------------------------
 
-    lat = st.session_state.test_lat
+    lat = st.session_state.get(
+        "test_lat"
+    )
 
-    lon = st.session_state.test_lon
+    lon = st.session_state.get(
+        "test_lon"
+    )
 
     if (
         lat is not None
-        and
-        lon is not None
+        and lon is not None
     ):
 
         gps = (
@@ -880,7 +709,11 @@ def result():
 
         gps = "Not recorded"
 
-    # Details
+    # --------------------------------------------------------
+    # TEST DETAILS
+    # --------------------------------------------------------
+
+    st.subheader("Test details")
 
     details = {
         "Record ID":
@@ -905,19 +738,23 @@ def result():
             st.session_state.test_image_hash
     }
 
+    details_df = pd.DataFrame(
+        details.items(),
+        columns=[
+            "Field",
+            "Value"
+        ]
+    )
+
     st.dataframe(
-        pd.DataFrame(
-            details.items(),
-            columns=[
-                "Field",
-                "Value"
-            ]
-        ),
+        details_df,
         hide_index=True,
         use_container_width=True
     )
 
-    # Save
+    # --------------------------------------------------------
+    # SAVE
+    # --------------------------------------------------------
 
     if st.button(
         "SAVE & GENERATE REPORT →",
@@ -926,6 +763,7 @@ def result():
     ):
 
         base = {
+
             "record_id":
                 st.session_state.test_record_id,
 
@@ -960,13 +798,10 @@ def result():
                 cv["explanation"]
         }
 
-        # Record hash
-
+        # Generate tamper-evident hash
         rh = record_hash(
             base
         )
-
-        # Full record
 
         test = {
             **base,
@@ -975,6 +810,7 @@ def result():
                 rh,
 
             "cv_data": {
+
                 "sample_rgb":
                     cv["sample_rgb"],
 
@@ -987,24 +823,20 @@ def result():
         }
 
         # Save
-
         save_test(
             test
         )
 
-        # Save hash
-
+        # Store hash
         st.session_state.test_record_hash = rh
 
         # Generate PDF
-
         st.session_state.test_pdf = build_pdf(
             test,
             st.session_state.test_image
         )
 
-        # Go to report
-
+        # Report
         st.session_state.page = "report"
 
         st.rerun()
@@ -1020,7 +852,7 @@ def report():
 
     steps(5)
 
-    st.subheader(
+    st.header(
         "Digital record created"
     )
 
@@ -1029,8 +861,8 @@ def report():
         "record was generated."
     )
 
-    st.write(
-        "Record SHA-256 hash:"
+    st.subheader(
+        "Record hash"
     )
 
     st.code(
@@ -1038,20 +870,24 @@ def report():
         language="text"
     )
 
+    # --------------------------------------------------------
     # PDF
+    # --------------------------------------------------------
 
     st.download_button(
-        "⬇ DOWNLOAD PDF REPORT",
+        label="⬇ DOWNLOAD PDF REPORT",
         data=st.session_state.test_pdf,
         file_name=(
-            f'{st.session_state.test_record_id}.pdf'
+            f"{st.session_state.test_record_id}.pdf"
         ),
         mime="application/pdf",
         type="primary",
         use_container_width=True
     )
 
-    # Existing records
+    # --------------------------------------------------------
+    # RECORDS
+    # --------------------------------------------------------
 
     rows = list_tests()
 
@@ -1061,7 +897,7 @@ def report():
             rows
         )
 
-        required_columns = [
+        columns = [
             "record_id",
             "officer_id",
             "drug",
@@ -1072,23 +908,29 @@ def report():
             "longitude"
         ]
 
-        available_columns = [
+        available = [
             column
-            for column in required_columns
+            for column in columns
             if column in df.columns
         ]
 
+        st.subheader(
+            "Recent test records"
+        )
+
         st.dataframe(
-            df[available_columns],
+            df[available],
             hide_index=True,
             use_container_width=True
         )
 
-    # Buttons
+    # --------------------------------------------------------
+    # BUTTONS
+    # --------------------------------------------------------
 
-    c1, c2 = st.columns(2)
+    col1, col2 = st.columns(2)
 
-    with c1:
+    with col1:
 
         if st.button(
             "START NEW TEST",
@@ -1101,7 +943,7 @@ def report():
 
             st.rerun()
 
-    with c2:
+    with col2:
 
         if st.button(
             "VIEW ALL RECORDS",
@@ -1121,7 +963,7 @@ def records():
 
     header()
 
-    st.subheader(
+    st.header(
         "Test records"
     )
 
@@ -1156,14 +998,14 @@ def records():
             "record_hash"
         ]
 
-        available_columns = [
+        available = [
             column
             for column in columns
             if column in df.columns
         ]
 
         st.dataframe(
-            df[available_columns],
+            df[available],
             hide_index=True,
             use_container_width=True
         )
@@ -1185,7 +1027,7 @@ def records():
 
 
 # ============================================================
-# PAGE ROUTING
+# APP ROUTING
 # ============================================================
 
 if "page" not in st.session_state:
@@ -1196,17 +1038,30 @@ if "page" not in st.session_state:
 page = st.session_state.page
 
 
-pages = {
-    "home": home,
-    "new_test": new_test,
-    "camera": camera,
-    "result": result,
-    "report": report,
-    "records": records
-}
+if page == "home":
 
+    home()
 
-pages.get(
-    page,
-    home
-)()
+elif page == "new_test":
+
+    new_test()
+
+elif page == "camera":
+
+    camera()
+
+elif page == "result":
+
+    result()
+
+elif page == "report":
+
+    report()
+
+elif page == "records":
+
+    records()
+
+else:
+
+    home()
