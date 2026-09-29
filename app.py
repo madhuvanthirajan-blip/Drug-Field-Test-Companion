@@ -13,15 +13,11 @@ from services.pdf_service import build_pdf
 from services.storage_service import init_db, save_test, list_tests
 from services.location_service import normalize_location
 
-
-# ============================================================
-# OPTIONAL GPS
-# ============================================================
-
 try:
     from streamlit_js_eval import get_geolocation
+    GEO_AVAILABLE = True
 except Exception:
-    get_geolocation = None
+    GEO_AVAILABLE = False
 
 
 # ============================================================
@@ -32,133 +28,375 @@ st.set_page_config(
     page_title=APP_NAME,
     page_icon="🛡️",
     layout="centered",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="collapsed",
 )
-
-init_db()
 
 
 # ============================================================
-# SIMPLE THEME
+# PROFESSIONAL MOBILE-FRIENDLY CSS
 # ============================================================
 
 st.markdown(
     """
     <style>
 
-    /* Main background */
+    /* ---------- GLOBAL ---------- */
+
     .stApp {
-        background-color: #f5f8fa;
+        background: #f5f7fa !important;
     }
 
-    /* Keep content centered */
+    .main {
+        background: #f5f7fa !important;
+    }
+
     .block-container {
-        max-width: 900px;
-        padding-top: 2rem;
-        padding-bottom: 3rem;
+        max-width: 920px !important;
+        padding-top: 1.5rem !important;
+        padding-bottom: 3rem !important;
+        padding-left: 1.2rem !important;
+        padding-right: 1.2rem !important;
     }
 
-    /* Hide Streamlit decoration */
-    [data-testid="stHeader"] {
-        background: #f5f8fa;
+
+    /* ---------- FORCE DARK TEXT ---------- */
+
+    .stApp,
+    .stApp p,
+    .stApp span,
+    .stApp label,
+    .stApp div,
+    .stApp h1,
+    .stApp h2,
+    .stApp h3,
+    .stApp h4,
+    .stApp h5,
+    .stApp h6 {
+        color: #172033 !important;
     }
 
-    /* Buttons */
+    .stMarkdown,
+    .stMarkdown p,
+    .stMarkdown span {
+        color: #172033 !important;
+    }
+
+
+    /* ---------- HEADINGS ---------- */
+
+    h1 {
+        font-size: 2rem !important;
+        font-weight: 800 !important;
+        letter-spacing: -0.5px !important;
+        margin-bottom: 0.25rem !important;
+    }
+
+    h2 {
+        font-size: 1.45rem !important;
+        font-weight: 750 !important;
+    }
+
+    h3 {
+        font-size: 1.15rem !important;
+        font-weight: 700 !important;
+    }
+
+
+    /* ---------- CAPTION ---------- */
+
+    [data-testid="stCaptionContainer"] {
+        color: #687386 !important;
+    }
+
+    [data-testid="stCaptionContainer"] p {
+        color: #687386 !important;
+    }
+
+
+    /* ---------- INPUTS ---------- */
+
+    input,
+    textarea {
+        background: #ffffff !important;
+        color: #172033 !important;
+        border: 1px solid #d8dee8 !important;
+        border-radius: 10px !important;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+        color: #8a94a6 !important;
+    }
+
+    [data-baseweb="select"] {
+        background: #ffffff !important;
+        border-radius: 10px !important;
+    }
+
+    [data-baseweb="select"] * {
+        color: #172033 !important;
+    }
+
+
+    /* ---------- BUTTONS ---------- */
+
     .stButton > button {
-        border-radius: 10px;
-        min-height: 44px;
-        font-weight: 600;
+        width: 100%;
+        min-height: 46px;
+        border-radius: 11px !important;
+        border: 1px solid #d7dce5 !important;
+        background: #ffffff !important;
+        color: #172033 !important;
+        font-weight: 700 !important;
+        font-size: 0.98rem !important;
+        transition: 0.15s ease;
     }
 
-    /* Mobile */
+    .stButton > button:hover {
+        border-color: #4f46e5 !important;
+        color: #4f46e5 !important;
+    }
+
+    .stButton > button[kind="primary"] {
+        background: #4f46e5 !important;
+        border-color: #4f46e5 !important;
+        color: #ffffff !important;
+    }
+
+    .stButton > button[kind="primary"] p,
+    .stButton > button[kind="primary"] span {
+        color: #ffffff !important;
+    }
+
+
+    /* ---------- FILE UPLOADER ---------- */
+
+    [data-testid="stFileUploader"] {
+        background: #ffffff !important;
+        border-radius: 12px !important;
+    }
+
+    [data-testid="stFileUploader"] * {
+        color: #172033 !important;
+    }
+
+
+    /* ---------- CAMERA ---------- */
+
+    [data-testid="stCameraInput"] {
+        background: #ffffff !important;
+        border-radius: 14px !important;
+        padding: 0.5rem !important;
+    }
+
+
+    /* ---------- DATAFRAME ---------- */
+
+    [data-testid="stDataFrame"] {
+        border-radius: 10px !important;
+        overflow: hidden !important;
+    }
+
+
+    /* ---------- METRICS ---------- */
+
+    [data-testid="stMetric"] {
+        background: #ffffff !important;
+        border: 1px solid #e0e5ec !important;
+        border-radius: 12px !important;
+        padding: 0.8rem !important;
+    }
+
+    [data-testid="stMetricLabel"] {
+        color: #687386 !important;
+    }
+
+    [data-testid="stMetricValue"] {
+        color: #172033 !important;
+    }
+
+
+    /* ---------- DIVIDER ---------- */
+
+    hr {
+        border: none !important;
+        border-top: 1px solid #e1e5eb !important;
+        margin: 1.2rem 0 !important;
+    }
+
+
+    /* ---------- MOBILE ---------- */
+
     @media (max-width: 600px) {
+
         .block-container {
-            padding-left: 0.7rem;
-            padding-right: 0.7rem;
-            padding-top: 1.5rem;
+            padding-left: 0.8rem !important;
+            padding-right: 0.8rem !important;
+            padding-top: 1rem !important;
         }
+
+        h1 {
+            font-size: 1.65rem !important;
+        }
+
+        h2 {
+            font-size: 1.3rem !important;
+        }
+
+        .stButton > button {
+            min-height: 48px !important;
+            font-size: 0.96rem !important;
+        }
+
     }
 
     </style>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
 
 
 # ============================================================
-# HEADER
+# DATABASE
 # ============================================================
+
+init_db()
+
+
+# ============================================================
+# SESSION STATE
+# ============================================================
+
+DEFAULTS = {
+    "page": "home",
+    "officer_id": "",
+    "drug": "",
+    "batch": "",
+    "image_bytes": None,
+    "processed_image": None,
+    "result": None,
+    "confidence": 0.0,
+    "notes": "",
+    "latitude": None,
+    "longitude": None,
+    "record_id": None,
+    "timestamp": None,
+    "image_hash": None,
+    "record_hash": None,
+    "report_bytes": None,
+}
+
+for key, value in DEFAULTS.items():
+    if key not in st.session_state:
+        st.session_state[key] = value
+
+
+# ============================================================
+# HELPERS
+# ============================================================
+
+def reset_test():
+    """Reset current test but keep officer ID."""
+
+    officer = st.session_state.get("officer_id", "")
+
+    for key, value in DEFAULTS.items():
+        if key == "officer_id":
+            continue
+
+        st.session_state[key] = value
+
+    st.session_state.officer_id = officer
+    st.session_state.page = "new_test"
+
 
 def header():
+    """Application header."""
 
-    st.title("🛡️ Field Test Companion")
+    col1, col2 = st.columns([0.12, 0.88])
 
-    st.caption(
-        "Digital companion for field drug testing"
-    )
+    with col1:
+        st.markdown("## 🛡️")
 
-    st.divider()
+    with col2:
+        st.title("Field Test Companion")
+        st.caption("Digital companion for field drug testing")
 
 
-# ============================================================
-# STEP BAR
-# NO HTML USED HERE
-# ============================================================
-
-def steps(active):
+def progress_bar(step):
+    """Compact responsive progress indicator."""
 
     labels = [
         "Officer",
         "Test details",
-        "Take photo",
+        "Photo",
         "Result",
-        "Report"
+        "Report",
     ]
 
-    columns = st.columns(5)
+    st.progress(step / 5)
 
-    for index, label in enumerate(labels, start=1):
-
-        with columns[index - 1]:
-
-            if index == active:
-
-                st.success(
-                    f"**{index}**\n\n**{label}**"
-                )
-
-            else:
-
-                st.info(
-                    f"**{index}**\n\n{label}"
-                )
-
-    st.write("")
+    st.caption(
+        f"STEP {step} OF 5  •  {labels[step - 1]}"
+    )
 
 
-# ============================================================
-# RESET
-# ============================================================
+def page_title(title, subtitle=None):
 
-def reset():
+    st.subheader(title)
 
-    keys_to_remove = []
+    if subtitle:
+        st.caption(subtitle)
 
-    for key in list(st.session_state.keys()):
 
-        if key.startswith("test_"):
-            keys_to_remove.append(key)
+def safe_location():
+    """
+    Attempt browser geolocation.
+    If unavailable, user can enter coordinates manually.
+    """
 
-        if key in [
-            "officer_id",
-            "page"
-        ]:
-            keys_to_remove.append(key)
+    latitude = None
+    longitude = None
 
-    for key in keys_to_remove:
+    if GEO_AVAILABLE:
 
-        if key in st.session_state:
-            del st.session_state[key]
+        try:
+            location = get_geolocation()
+
+            if location:
+
+                coords = location.get("coords", {})
+
+                latitude = coords.get("latitude")
+                longitude = coords.get("longitude")
+
+        except Exception:
+            pass
+
+    return latitude, longitude
+
+
+def process_uploaded_image(uploaded_file):
+
+    if uploaded_file is None:
+        return None
+
+    try:
+
+        image_bytes = uploaded_file.getvalue()
+
+        image = decode_image(image_bytes)
+
+        if image is None:
+            return None
+
+        return image
+
+    except Exception as e:
+
+        st.error(f"Unable to read image: {e}")
+
+        return None
 
 
 # ============================================================
@@ -169,45 +407,52 @@ def home():
 
     header()
 
-    steps(1)
+    progress_bar(1)
 
-    st.header("Officer workspace")
+    st.divider()
 
-    officer = st.text_input(
-        "Officer ID",
-        value=st.session_state.get(
-            "officer_id",
-            ""
-        ),
-        placeholder="Example: OFF-001"
+    page_title(
+        "Officer identification",
+        "Enter the officer ID to begin a new field test."
     )
 
+    officer_id = st.text_input(
+        "Officer ID",
+        value=st.session_state.officer_id,
+        placeholder="Example: OFF-1024",
+        max_chars=50,
+    )
+
+    st.session_state.officer_id = officer_id.strip()
+
+    st.write("")
+
     if st.button(
-        "NEXT →",
+        "Continue →",
         type="primary",
-        use_container_width=True
+        use_container_width=True,
     ):
 
-        if not officer.strip():
+        if not st.session_state.officer_id:
 
-            st.error(
-                "Please enter an Officer ID."
-            )
+            st.error("Please enter the officer ID.")
 
         else:
 
-            st.session_state.officer_id = (
-                officer.strip()
-            )
-
             st.session_state.page = "new_test"
-
             st.rerun()
 
-    st.warning(
-        "Prototype: Field-test output is presumptive "
-        "and requires laboratory confirmation."
-    )
+    st.write("")
+
+    with st.container(border=True):
+
+        st.markdown("### Prototype notice")
+
+        st.caption(
+            "This system is a prototype decision-support tool. "
+            "Field test results should not be treated as definitive "
+            "laboratory confirmation."
+        )
 
 
 # ============================================================
@@ -218,45 +463,38 @@ def new_test():
 
     header()
 
-    steps(2)
+    progress_bar(2)
 
-    st.header("Start a new test")
+    st.divider()
 
-    st.caption(
-        f"Field Officer · "
-        f"{st.session_state.get('officer_id', '')}"
+    page_title(
+        "Test details",
+        "Select the suspected substance before taking the test image."
     )
 
-    drug_options = [
-        "Choose a drug"
-    ] + list(DRUGS)
-
-    drug = st.selectbox(
+    st.session_state.drug = st.selectbox(
         "Suspected drug",
-        drug_options
+        options=["Select a drug"] + list(DRUGS),
+        index=(
+            ["Select a drug"] + list(DRUGS)
+        ).index(st.session_state.drug)
+        if st.session_state.drug in DRUGS
+        else 0,
     )
 
-    batch = st.text_input(
-        "Kit batch / lot number (optional)",
-        placeholder="As printed on the kit"
+    st.session_state.batch = st.text_input(
+        "Batch / sample reference (optional)",
+        value=st.session_state.batch,
+        placeholder="Example: SAMPLE-2026-001",
     )
 
-    if drug != "Choose a drug":
-
-        st.info(
-            "The selected drug determines the prototype "
-            "colour interpretation. This prototype cannot "
-            "identify an unknown substance by itself."
-        )
+    st.write("")
 
     col1, col2 = st.columns(2)
 
     with col1:
 
-        if st.button(
-            "← Back",
-            use_container_width=True
-        ):
+        if st.button("← Back"):
 
             st.session_state.page = "home"
             st.rerun()
@@ -264,29 +502,17 @@ def new_test():
     with col2:
 
         if st.button(
-            "CONTINUE TO CAMERA →",
+            "Continue →",
             type="primary",
-            use_container_width=True
         ):
 
-            if drug == "Choose a drug":
+            if st.session_state.drug == "Select a drug":
 
-                st.error(
-                    "Please choose a suspected drug."
-                )
+                st.error("Please select a suspected drug.")
 
             else:
 
-                st.session_state.test_drug = drug
-
-                st.session_state.test_batch = (
-                    batch.strip()
-                    if batch.strip()
-                    else "Not recorded"
-                )
-
                 st.session_state.page = "camera"
-
                 st.rerun()
 
 
@@ -298,264 +524,287 @@ def camera():
 
     header()
 
-    steps(3)
+    progress_bar(3)
 
-    st.header("Take a test photo")
+    st.divider()
 
-    st.caption(
-        f"{st.session_state.test_drug} · "
-        f"Batch {st.session_state.test_batch}"
-    )
-
-    st.info(
-        "Position the reference colour card on the LEFT "
-        "and the test strip/reaction area on the RIGHT. "
-        "Keep both visible, flat and well lit."
+    page_title(
+        "Capture test image",
+        "Place the reference colour card and test strip clearly inside the frame."
     )
 
     # --------------------------------------------------------
-    # GUIDE IMAGE
+    # Instructions
     # --------------------------------------------------------
 
-    try:
+    with st.container(border=True):
 
-        st.image(
-            "assets/reference_card_guide.png",
-            use_container_width=True
+        st.markdown("### Before taking the photo")
+
+        st.markdown(
+            """
+            - Keep the reference colour card visible.
+            - Keep the test strip completely visible.
+            - Use good, even lighting.
+            - Avoid shadows and reflections.
+            - Keep the camera steady.
+            """
         )
 
-    except Exception:
-
-        st.warning(
-            "Reference guide image could not be loaded."
-        )
+    st.write("")
 
     # --------------------------------------------------------
     # CAMERA
     # --------------------------------------------------------
 
-    captured = st.camera_input(
-        "Take test photo"
+    st.markdown("### Camera")
+
+    camera_image = st.camera_input(
+        "Take test photo",
+        key="camera_input",
     )
 
-    uploaded = st.file_uploader(
-        "Or upload a saved test photo",
-        type=[
-            "jpg",
-            "jpeg",
-            "png"
-        ]
-    )
-
-    image = captured or uploaded
-
-    if image is None:
-        return
-
-    # --------------------------------------------------------
-    # SHOW IMAGE
-    # --------------------------------------------------------
-
-    st.image(
-        image,
-        caption="Captured test image",
-        use_container_width=True
+    st.caption(
+        "On mobile, this opens the phone camera. "
+        "On a laptop, use the webcam if available."
     )
 
     # --------------------------------------------------------
-    # GPS
+    # IMAGE UPLOAD BACKUP
     # --------------------------------------------------------
 
-    st.subheader("Location")
+    with st.expander("Use an existing image instead"):
 
-    lat = None
-    lon = None
+        uploaded_image = st.file_uploader(
+            "Upload test image",
+            type=["jpg", "jpeg", "png"],
+            key="uploaded_test_image",
+        )
 
-    if get_geolocation is not None:
+    selected_image = camera_image or uploaded_image
 
-        try:
+    # --------------------------------------------------------
+    # LOCATION
+    # --------------------------------------------------------
 
-            location = get_geolocation(
-                component_key="field_test_gps"
-            )
+    st.divider()
 
-            if isinstance(location, dict):
+    st.markdown("### Location")
 
-                latitude = None
-                longitude = None
+    lat, lon = safe_location()
 
-                if "coords" in location:
+    if lat is not None and lon is not None:
 
-                    coords = location.get(
-                        "coords",
-                        {}
-                    )
+        st.session_state.latitude = lat
+        st.session_state.longitude = lon
 
-                    latitude = coords.get(
-                        "latitude"
-                    )
-
-                    longitude = coords.get(
-                        "longitude"
-                    )
-
-                else:
-
-                    latitude = location.get(
-                        "latitude"
-                    )
-
-                    longitude = location.get(
-                        "longitude"
-                    )
-
-                if (
-                    latitude is not None
-                    and longitude is not None
-                ):
-
-                    lat, lon = normalize_location(
-                        latitude,
-                        longitude
-                    )
-
-                    st.success(
-                        f"GPS captured automatically\n\n"
-                        f"Latitude: {lat:.6f}\n\n"
-                        f"Longitude: {lon:.6f}"
-                    )
-
-                else:
-
-                    st.info(
-                        "Waiting for browser GPS permission..."
-                    )
-
-        except Exception:
-
-            st.info(
-                "Automatic GPS is unavailable. "
-                "You can enter the coordinates manually."
-            )
+        st.success(
+            f"Location captured: {lat:.6f}, {lon:.6f}"
+        )
 
     else:
 
         st.info(
-            "Automatic GPS component is unavailable. "
-            "You can enter the coordinates manually."
+            "Automatic location is unavailable. "
+            "You can enter coordinates manually."
         )
 
-    # --------------------------------------------------------
-    # MANUAL GPS
-    # --------------------------------------------------------
+        location_col1, location_col2 = st.columns(2)
 
-    col1, col2 = st.columns(2)
+        with location_col1:
 
-    with col1:
-
-        lat_input = st.text_input(
-            "Latitude (optional)",
-            value=(
-                ""
-                if lat is None
-                else str(lat)
+            manual_lat = st.number_input(
+                "Latitude",
+                value=float(
+                    st.session_state.latitude or 0.0
+                ),
+                format="%.6f",
             )
+
+        with location_col2:
+
+            manual_lon = st.number_input(
+                "Longitude",
+                value=float(
+                    st.session_state.longitude or 0.0
+                ),
+                format="%.6f",
+            )
+
+        if manual_lat != 0.0 or manual_lon != 0.0:
+
+            st.session_state.latitude = manual_lat
+            st.session_state.longitude = manual_lon
+
+    # --------------------------------------------------------
+    # PROCESS IMAGE
+    # --------------------------------------------------------
+
+    if selected_image is not None:
+
+        image_bytes = selected_image.getvalue()
+
+        st.session_state.image_bytes = image_bytes
+
+        st.divider()
+
+        st.markdown("### Preview")
+
+        st.image(
+            image_bytes,
+            caption="Captured test image",
+            use_container_width=True,
         )
 
-    with col2:
+        if st.button(
+            "Analyze test →",
+            type="primary",
+            use_container_width=True,
+        ):
 
-        lon_input = st.text_input(
-            "Longitude (optional)",
-            value=(
-                ""
-                if lon is None
-                else str(lon)
-            )
-        )
+            with st.spinner("Analyzing test image..."):
 
-    if (
-        lat is None
-        and lat_input.strip()
-        and lon_input.strip()
-    ):
+                try:
 
-        try:
+                    image = decode_image(image_bytes)
 
-            lat, lon = normalize_location(
-                lat_input,
-                lon_input
-            )
+                    if image is None:
 
-        except Exception:
+                        st.error(
+                            "The image could not be decoded."
+                        )
+                        return
 
-            st.warning(
-                "Please enter valid coordinates."
-            )
+                    analysis = analyze_image(
+                        image,
+                        st.session_state.drug,
+                    )
+
+                    # ------------------------------------------------
+                    # Support common result formats
+                    # ------------------------------------------------
+
+                    if isinstance(analysis, dict):
+
+                        result = analysis.get(
+                            "result",
+                            analysis.get(
+                                "classification",
+                                "Inconclusive",
+                            ),
+                        )
+
+                        confidence = analysis.get(
+                            "confidence",
+                            0.0,
+                        )
+
+                        processed = analysis.get(
+                            "processed_image",
+                            analysis.get(
+                                "image",
+                                image,
+                            ),
+                        )
+
+                        notes = analysis.get(
+                            "notes",
+                            "",
+                        )
+
+                    else:
+
+                        result = str(analysis)
+                        confidence = 0.0
+                        processed = image
+                        notes = ""
+
+                    st.session_state.result = str(result)
+                    st.session_state.confidence = float(
+                        confidence or 0.0
+                    )
+
+                    st.session_state.processed_image = (
+                        processed
+                    )
+
+                    st.session_state.notes = str(notes)
+
+                    st.session_state.timestamp = (
+                        datetime.now().isoformat()
+                    )
+
+                    st.session_state.image_hash = (
+                        sha256_bytes(image_bytes)
+                    )
+
+                    st.session_state.record_id = (
+                        f"FTC-{uuid.uuid4().hex[:10].upper()}"
+                    )
+
+                    # ------------------------------------------------
+                    # Record hash
+                    # ------------------------------------------------
+
+                    try:
+
+                        record_data = {
+                            "record_id":
+                                st.session_state.record_id,
+                            "officer_id":
+                                st.session_state.officer_id,
+                            "drug":
+                                st.session_state.drug,
+                            "batch":
+                                st.session_state.batch,
+                            "result":
+                                st.session_state.result,
+                            "confidence":
+                                st.session_state.confidence,
+                            "timestamp":
+                                st.session_state.timestamp,
+                            "latitude":
+                                st.session_state.latitude,
+                            "longitude":
+                                st.session_state.longitude,
+                            "image_hash":
+                                st.session_state.image_hash,
+                        }
+
+                        st.session_state.record_hash = (
+                            record_hash(record_data)
+                        )
+
+                    except Exception:
+
+                        st.session_state.record_hash = (
+                            sha256_bytes(
+                                str(
+                                    st.session_state.record_id
+                                ).encode()
+                            )
+                        )
+
+                    st.session_state.page = "result"
+
+                    st.rerun()
+
+                except Exception as e:
+
+                    st.error(
+                        f"Analysis failed: {e}"
+                    )
 
     # --------------------------------------------------------
-    # PROCESS
+    # BACK
     # --------------------------------------------------------
 
-    if st.button(
-        "PROCESS PHOTO →",
-        type="primary",
-        use_container_width=True
-    ):
+    st.write("")
 
-        try:
+    if st.button("← Back"):
 
-            raw = image.getvalue()
-
-            decoded = decode_image(
-                raw
-            )
-
-            cv = analyze_image(
-                decoded
-            )
-
-            # Store image
-            st.session_state.test_image = raw
-
-            # Store CV output
-            st.session_state.test_cv = cv
-
-            # Time
-            st.session_state.test_time = (
-                datetime.now()
-                .astimezone()
-                .strftime(
-                    "%d %b %Y, %I:%M:%S %p %Z"
-                )
-            )
-
-            # GPS
-            st.session_state.test_lat = lat
-            st.session_state.test_lon = lon
-
-            # Record ID
-            st.session_state.test_record_id = (
-                "FTC-"
-                + uuid.uuid4()
-                .hex[:10]
-                .upper()
-            )
-
-            # Image hash
-            st.session_state.test_image_hash = (
-                sha256_bytes(raw)
-            )
-
-            # Go to result
-            st.session_state.page = "result"
-
-            st.rerun()
-
-        except Exception as e:
-
-            st.error(
-                f"Could not process image: {e}"
-            )
+        st.session_state.page = "new_test"
+        st.rerun()
 
 
 # ============================================================
@@ -566,280 +815,255 @@ def result():
 
     header()
 
-    steps(4)
+    progress_bar(4)
 
-    st.header("Review result")
+    st.divider()
 
-    cv = st.session_state.test_cv
-
-    result_value = str(
-        cv.get(
-            "result",
-            "INCONCLUSIVE"
-        )
+    page_title(
+        "Test result",
+        "Review the analysis before saving the digital record."
     )
 
-    confidence = float(
-        cv.get(
-            "confidence",
-            0
-        )
+    result_value = (
+        st.session_state.result or "Inconclusive"
+    )
+
+    confidence = (
+        st.session_state.confidence or 0.0
     )
 
     # --------------------------------------------------------
-    # RESULT DISPLAY
+    # RESULT CARD
     # --------------------------------------------------------
 
-    if result_value.upper() == "POSITIVE":
+    if "positive" in result_value.lower():
 
         st.error(
-            f"## {result_value}"
+            f"### Result: {result_value}"
         )
 
-    elif result_value.upper() == "NEGATIVE":
+    elif "negative" in result_value.lower():
 
         st.success(
-            f"## {result_value}"
+            f"### Result: {result_value}"
         )
 
     else:
 
         st.warning(
-            f"## {result_value}"
+            f"### Result: {result_value}"
         )
 
-    st.metric(
-        "Prototype confidence",
-        f"{confidence:.1f}%"
-    )
+    st.write("")
 
-    # --------------------------------------------------------
-    # PROCESSED IMAGE
-    # --------------------------------------------------------
-
-    if "annotated" in cv:
-
-        st.image(
-            encode_jpeg(
-                cv["annotated"]
-            ),
-            caption=(
-                "Processed image — detected "
-                "reference and test regions"
-            ),
-            use_container_width=True
-        )
-
-    # --------------------------------------------------------
-    # EXPLANATION
-    # --------------------------------------------------------
-
-    if "explanation" in cv:
-
-        st.write(
-            cv["explanation"]
-        )
-
-    # --------------------------------------------------------
-    # COLOUR DATA
-    # --------------------------------------------------------
-
-    st.subheader("Image analysis")
-
-    col1, col2, col3 = st.columns(3)
+    col1, col2 = st.columns(2)
 
     with col1:
 
         st.metric(
-            "Sample R",
-            f'{cv["sample_rgb"]["r"]:.0f}'
-        )
-
-        st.metric(
-            "Sample G",
-            f'{cv["sample_rgb"]["g"]:.0f}'
+            "Confidence",
+            f"{confidence * 100:.1f}%"
+            if confidence <= 1
+            else f"{confidence:.1f}%",
         )
 
     with col2:
 
         st.metric(
-            "Sample B",
-            f'{cv["sample_rgb"]["b"]:.0f}'
-        )
-
-        st.metric(
-            "Hue",
-            f'{cv["sample_hsv"]["h"]:.0f}'
-        )
-
-    with col3:
-
-        st.metric(
-            "Saturation",
-            f'{cv["sample_hsv"]["s"]:.0f}'
-        )
-
-        st.metric(
-            "Lighting factor",
-            f'{cv["lighting_factor"]:.2f}'
+            "Record ID",
+            st.session_state.record_id or "—",
         )
 
     # --------------------------------------------------------
-    # GPS
+    # IMAGE
     # --------------------------------------------------------
 
-    lat = st.session_state.get(
-        "test_lat"
-    )
+    if st.session_state.processed_image is not None:
 
-    lon = st.session_state.get(
-        "test_lon"
-    )
+        st.divider()
 
-    if (
-        lat is not None
-        and lon is not None
-    ):
+        st.markdown("### Processed image")
 
-        gps = (
-            f"{lat:.6f}, {lon:.6f}"
-        )
+        try:
 
-    else:
+            st.image(
+                st.session_state.processed_image,
+                use_container_width=True,
+            )
 
-        gps = "Not recorded"
+        except Exception:
+            pass
 
     # --------------------------------------------------------
     # TEST DETAILS
     # --------------------------------------------------------
 
-    st.subheader("Test details")
+    st.divider()
 
-    details = {
-        "Record ID":
-            st.session_state.test_record_id,
+    st.markdown("### Test details")
 
-        "Officer ID":
-            st.session_state.officer_id,
-
-        "Suspected drug":
-            st.session_state.test_drug,
-
-        "Kit batch":
-            st.session_state.test_batch,
-
-        "Timestamp":
-            st.session_state.test_time,
-
-        "GPS":
-            gps,
-
-        "Image SHA-256":
-            st.session_state.test_image_hash
-    }
-
-    details_df = pd.DataFrame(
-        details.items(),
-        columns=[
-            "Field",
-            "Value"
-        ]
+    details = pd.DataFrame(
+        {
+            "Field": [
+                "Officer ID",
+                "Suspected drug",
+                "Batch / sample",
+                "Timestamp",
+                "Latitude",
+                "Longitude",
+            ],
+            "Value": [
+                st.session_state.officer_id,
+                st.session_state.drug,
+                st.session_state.batch or "—",
+                st.session_state.timestamp or "—",
+                (
+                    f"{st.session_state.latitude:.6f}"
+                    if st.session_state.latitude is not None
+                    else "—"
+                ),
+                (
+                    f"{st.session_state.longitude:.6f}"
+                    if st.session_state.longitude is not None
+                    else "—"
+                ),
+            ],
+        }
     )
 
     st.dataframe(
-        details_df,
+        details,
         hide_index=True,
-        use_container_width=True
+        use_container_width=True,
     )
 
     # --------------------------------------------------------
-    # SAVE
+    # DISCLAIMER
     # --------------------------------------------------------
 
-    if st.button(
-        "SAVE & GENERATE REPORT →",
-        type="primary",
-        use_container_width=True
-    ):
+    with st.container(border=True):
 
-        base = {
+        st.markdown("### Important")
 
-            "record_id":
-                st.session_state.test_record_id,
-
-            "officer_id":
-                st.session_state.officer_id,
-
-            "drug":
-                st.session_state.test_drug,
-
-            "batch":
-                st.session_state.test_batch,
-
-            "result":
-                cv["result"],
-
-            "confidence":
-                cv["confidence"],
-
-            "timestamp":
-                st.session_state.test_time,
-
-            "latitude":
-                lat,
-
-            "longitude":
-                lon,
-
-            "image_hash":
-                st.session_state.test_image_hash,
-
-            "explanation":
-                cv["explanation"]
-        }
-
-        # Generate tamper-evident hash
-        rh = record_hash(
-            base
+        st.caption(
+            "This is a prototype field decision-support system. "
+            "The result is presumptive and should not replace "
+            "laboratory confirmation."
         )
 
-        test = {
-            **base,
+    st.write("")
 
-            "record_hash":
-                rh,
+    # --------------------------------------------------------
+    # ACTIONS
+    # --------------------------------------------------------
 
-            "cv_data": {
+    col1, col2 = st.columns(2)
 
-                "sample_rgb":
-                    cv["sample_rgb"],
+    with col1:
 
-                "sample_hsv":
-                    cv["sample_hsv"],
+        if st.button("← Retake photo"):
 
-                "lighting_factor":
-                    cv["lighting_factor"]
-            }
-        }
+            st.session_state.page = "camera"
+            st.session_state.result = None
+            st.rerun()
 
-        # Save
-        save_test(
-            test
-        )
+    with col2:
 
-        # Store hash
-        st.session_state.test_record_hash = rh
+        if st.button(
+            "Save & generate report",
+            type="primary",
+        ):
 
-        # Generate PDF
-        st.session_state.test_pdf = build_pdf(
-            test,
-            st.session_state.test_image
-        )
+            with st.spinner("Saving record..."):
 
-        # Report
-        st.session_state.page = "report"
+                try:
 
-        st.rerun()
+                    test_record = {
+                        "record_id":
+                            st.session_state.record_id,
+                        "officer_id":
+                            st.session_state.officer_id,
+                        "drug":
+                            st.session_state.drug,
+                        "batch":
+                            st.session_state.batch,
+                        "result":
+                            st.session_state.result,
+                        "confidence":
+                            st.session_state.confidence,
+                        "timestamp":
+                            st.session_state.timestamp,
+                        "latitude":
+                            st.session_state.latitude,
+                        "longitude":
+                            st.session_state.longitude,
+                        "image_hash":
+                            st.session_state.image_hash,
+                        "record_hash":
+                            st.session_state.record_hash,
+                        "notes":
+                            st.session_state.notes,
+                    }
+
+                    try:
+
+                        save_test(test_record)
+
+                    except TypeError:
+
+                        # Compatibility with older storage_service
+                        save_test(
+                            st.session_state.record_id,
+                            st.session_state.officer_id,
+                            st.session_state.drug,
+                            st.session_state.result,
+                            st.session_state.timestamp,
+                        )
+
+                    # ------------------------------------------------
+                    # PDF
+                    # ------------------------------------------------
+
+                    try:
+
+                        pdf = build_pdf(
+                            test_record
+                        )
+
+                    except TypeError:
+
+                        pdf = build_pdf(
+                            record_id=
+                                st.session_state.record_id,
+                            officer_id=
+                                st.session_state.officer_id,
+                            drug=
+                                st.session_state.drug,
+                            result=
+                                st.session_state.result,
+                            confidence=
+                                st.session_state.confidence,
+                            timestamp=
+                                st.session_state.timestamp,
+                            latitude=
+                                st.session_state.latitude,
+                            longitude=
+                                st.session_state.longitude,
+                            record_hash=
+                                st.session_state.record_hash,
+                        )
+
+                    st.session_state.report_bytes = pdf
+
+                    st.session_state.page = "report"
+
+                    st.rerun()
+
+                except Exception as e:
+
+                    st.error(
+                        f"Unable to save record: {e}"
+                    )
 
 
 # ============================================================
@@ -850,82 +1074,88 @@ def report():
 
     header()
 
-    steps(5)
+    progress_bar(5)
 
-    st.header(
-        "Digital record created"
+    st.divider()
+
+    page_title(
+        "Digital report",
+        "The field test record has been saved."
     )
 
-    st.success(
-        "Test saved locally and a tamper-evident "
-        "record was generated."
-    )
+    st.success("Record saved successfully.")
 
-    st.subheader(
-        "Record hash"
-    )
+    st.write("")
+
+    with st.container(border=True):
+
+        st.markdown("### Record")
+
+        st.write(
+            f"**Record ID:** "
+            f"{st.session_state.record_id}"
+        )
+
+        st.write(
+            f"**Officer:** "
+            f"{st.session_state.officer_id}"
+        )
+
+        st.write(
+            f"**Drug:** "
+            f"{st.session_state.drug}"
+        )
+
+        st.write(
+            f"**Result:** "
+            f"{st.session_state.result}"
+        )
+
+        st.write(
+            f"**Timestamp:** "
+            f"{st.session_state.timestamp}"
+        )
+
+    st.write("")
+
+    # --------------------------------------------------------
+    # HASH
+    # --------------------------------------------------------
+
+    st.markdown("### Tamper-evident record")
 
     st.code(
-        st.session_state.test_record_hash,
-        language="text"
+        st.session_state.record_hash or "Unavailable",
+        language="text",
+    )
+
+    st.caption(
+        "SHA-256 hash generated for the digital record."
     )
 
     # --------------------------------------------------------
     # PDF
     # --------------------------------------------------------
 
-    st.download_button(
-        label="⬇ DOWNLOAD PDF REPORT",
-        data=st.session_state.test_pdf,
-        file_name=(
-            f"{st.session_state.test_record_id}.pdf"
-        ),
-        mime="application/pdf",
-        type="primary",
-        use_container_width=True
-    )
+    if st.session_state.report_bytes:
 
-    # --------------------------------------------------------
-    # RECORDS
-    # --------------------------------------------------------
+        st.write("")
 
-    rows = list_tests()
-
-    if rows:
-
-        df = pd.DataFrame(
-            rows
+        st.download_button(
+            label="⬇ Download PDF report",
+            data=st.session_state.report_bytes,
+            file_name=(
+                f"{st.session_state.record_id}.pdf"
+            ),
+            mime="application/pdf",
+            type="primary",
+            use_container_width=True,
         )
 
-        columns = [
-            "record_id",
-            "officer_id",
-            "drug",
-            "result",
-            "confidence",
-            "timestamp",
-            "latitude",
-            "longitude"
-        ]
-
-        available = [
-            column
-            for column in columns
-            if column in df.columns
-        ]
-
-        st.subheader(
-            "Recent test records"
-        )
-
-        st.dataframe(
-            df[available],
-            hide_index=True,
-            use_container_width=True
-        )
+    st.write("")
 
     # --------------------------------------------------------
-    # BUTTONS
+    # ACTIONS
     # --------------------------------------------------------
 
     col1, col2 = st.columns(2)
@@ -933,25 +1163,18 @@ def report():
     with col1:
 
         if st.button(
-            "START NEW TEST",
-            use_container_width=True
+            "＋ New test",
+            type="primary",
         ):
 
-            reset()
-
-            st.session_state.page = "new_test"
-
+            reset_test()
             st.rerun()
 
     with col2:
 
-        if st.button(
-            "VIEW ALL RECORDS",
-            use_container_width=True
-        ):
+        if st.button("View records"):
 
             st.session_state.page = "records"
-
             st.rerun()
 
 
@@ -963,105 +1186,121 @@ def records():
 
     header()
 
-    st.header(
-        "Test records"
+    st.divider()
+
+    page_title(
+        "Test records",
+        "Search previously saved field test records."
     )
 
-    search = st.text_input(
-        "Search records",
-        placeholder=(
-            "Officer, drug, result, batch or record ID"
+    try:
+
+        records_data = list_tests()
+
+    except Exception as e:
+
+        st.error(
+            f"Unable to load records: {e}"
         )
-    )
+        records_data = []
 
-    rows = list_tests(
-        search
-    )
+    if records_data:
 
-    if rows:
+        if isinstance(records_data, pd.DataFrame):
 
-        df = pd.DataFrame(
-            rows
+            df = records_data.copy()
+
+        else:
+
+            df = pd.DataFrame(records_data)
+
+        search = st.text_input(
+            "Search",
+            placeholder="Search officer, drug, result or record ID",
         )
 
-        columns = [
-            "record_id",
-            "officer_id",
-            "drug",
-            "batch",
-            "result",
-            "confidence",
-            "timestamp",
-            "latitude",
-            "longitude",
-            "image_hash",
-            "record_hash"
-        ]
+        if search:
 
-        available = [
-            column
-            for column in columns
-            if column in df.columns
-        ]
+            search_lower = search.lower()
+
+            mask = df.astype(str).apply(
+                lambda row:
+                    row.str.lower().str.contains(
+                        search_lower,
+                        na=False,
+                    ).any(),
+                axis=1,
+            )
+
+            df = df[mask]
 
         st.dataframe(
-            df[available],
+            df,
             hide_index=True,
-            use_container_width=True
+            use_container_width=True,
         )
 
     else:
 
-        st.info(
-            "No records found."
-        )
+        with st.container(border=True):
 
-    if st.button(
-        "← BACK TO NEW TEST",
-        use_container_width=True
-    ):
+            st.markdown("### No records yet")
 
-        st.session_state.page = "new_test"
+            st.caption(
+                "Completed field tests will appear here."
+            )
 
-        st.rerun()
+    st.write("")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+
+        if st.button("← Home"):
+
+            st.session_state.page = "home"
+            st.rerun()
+
+    with col2:
+
+        if st.button(
+            "＋ New test",
+            type="primary",
+        ):
+
+            reset_test()
+            st.rerun()
 
 
 # ============================================================
-# APP ROUTING
+# ROUTER
 # ============================================================
 
-if "page" not in st.session_state:
-
-    st.session_state.page = "home"
-
-
-page = st.session_state.page
-
-
-if page == "home":
+if st.session_state.page == "home":
 
     home()
 
-elif page == "new_test":
+elif st.session_state.page == "new_test":
 
     new_test()
 
-elif page == "camera":
+elif st.session_state.page == "camera":
 
     camera()
 
-elif page == "result":
+elif st.session_state.page == "result":
 
     result()
 
-elif page == "report":
+elif st.session_state.page == "report":
 
     report()
 
-elif page == "records":
+elif st.session_state.page == "records":
 
     records()
 
 else:
 
-    home()
+    st.session_state.page = "home"
+    st.rerun()
